@@ -1,6 +1,7 @@
 package com.crud.service;
 
 import com.crud.dto.EmployeeDto;
+import com.crud.dto.LoginDto;
 import com.crud.exception.MyException;
 import java.util.List;
 
@@ -10,4 +11,6 @@ public interface EmployeeService {
     public EmployeeDto delete(String email) throws MyException;
     public EmployeeDto update(String email, EmployeeDto employeeDto) throws MyException;
     public EmployeeDto getEmployee(String email) throws MyException;
+    public String verify(LoginDto loginDto);
+    public List<EmployeeDto> searchEmp(String keyword);
 }

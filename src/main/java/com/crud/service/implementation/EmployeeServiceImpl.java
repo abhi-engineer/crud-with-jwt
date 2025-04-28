@@ -1,6 +1,7 @@
 package com.crud.service.implementation;
 
 import com.crud.dto.EmployeeDto;
+import com.crud.dto.LoginDto;
 import com.crud.entity.Department;
 import com.crud.entity.Employee;
 import com.crud.entity.Roles;
@@ -8,7 +9,11 @@ import com.crud.exception.MyException;
 import com.crud.repository.DepartmentRepo;
 import com.crud.repository.EmployeeRepo;
 import com.crud.service.EmployeeService;
+import com.crud.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +30,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     private EmployeeRepo employeeRepo;
     @Autowired
     private DepartmentRepo departmentRepo;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -113,6 +123,26 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDto getEmployee(String email) throws MyException {
         Employee employee = employeeRepo.findByEmail(email).orElseThrow(() -> new MyException("USER_NOT_FOUND"));
         return employee.toDto();
+    }
+
+    @Override
+    public String verify(LoginDto loginDto) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
+        if(authentication.isAuthenticated())
+            return jwtUtil.genterateToken(loginDto.getEmail());
+        return "";
+    }
+
+    @Override
+    public List<EmployeeDto> searchEmp(String keyword) {
+        List<Employee> employeeList = employeeRepo.searchEmp(keyword);
+
+        // changin Items list to ItmemsDto list, using dto method.
+        List<EmployeeDto> employeeDtosList = employeeList.stream()
+                .map(Employee :: toDto)
+                .toList();
+
+        return employeeDtosList;
     }
 
 
